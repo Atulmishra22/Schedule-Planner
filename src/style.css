@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Custom CSS Variables - Deep Focus Theme */
+@theme {
+  /* Primary Colors */
+  --color-primary-900: #0F172A;
+  --color-primary-800: #1E293B;
+  --color-primary-700: #334155;
+  --color-primary-600: #475569;
+  
+  /* Accent - Productivity Blue */
+  --color-accent-300: #93C5FD;
+  --color-accent-400: #60A5FA;
+  --color-accent-500: #3B82F6;
+  --color-accent-600: #2563EB;
+  
+  /* Success - Completion */
+  --color-success-400: #34D399;
+  --color-success-500: #10B981;
+  --color-success-600: #059669;
+  
+  /* Neutral - Text & UI */
+  --color-neutral-100: #F1F5F9;
+  --color-neutral-200: #E2E8F0;
+  --color-neutral-400: #94A3B8;
+  --color-neutral-600: #475569;
+  
+  /* Warning - Time Alerts */
+  --color-warning-500: #F59E0B;
+  --color-warning-600: #D97706;
+  
+  /* Chart Colors */
+  --color-chart-purple: #8B5CF6;
+  --color-chart-cyan: #06B6D4;
+  --color-chart-pink: #EC4899;
+  --color-chart-indigo: #6366F1;
+  --color-chart-emerald: #10B981;
+  
+  /* Font Family */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Base Styles */
+body {
+  margin: 0;
+  background-color: var(--color-primary-900);
+  color: var(--color-neutral-100);
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+}

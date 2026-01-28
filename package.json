@@ -1,0 +1,28 @@
+{
+  "name": "timemanagement",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:extension": "vite build && npm run copy:extension",
+    "copy:extension": "powershell -Command \"Copy-Item extension/manifest.json dist/ -Force; Copy-Item extension/background.js dist/ -Force; if (Test-Path extension/icons) { Copy-Item extension/icons dist/ -Recurse -Force }\""
+  },
+  "dependencies": {
+    "@crxjs/vite-plugin": "^2.3.0",
+    "@headlessui/vue": "^1.7.23",
+    "@tailwindcss/postcss": "^4.1.18",
+    "chart.js": "^4.5.1",
+    "pinia": "^3.0.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "vue": "^3.5.24",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.2.4"
+  }
+}
