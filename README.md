@@ -51,7 +51,7 @@ A professional productivity application built with Vue 3 for task-based scheduli
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/Atulmishra22/Schedule-Planner.git
 cd timeManagement
 ```
 
