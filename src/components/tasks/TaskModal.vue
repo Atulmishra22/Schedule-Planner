@@ -176,6 +176,10 @@ const props = defineProps({
   task: {
     type: Object,
     default: null
+  },
+  date: {
+    type: String,
+    default: null
   }
 });
 
@@ -229,7 +233,10 @@ const handleSubmit = () => {
     tasksStore.updateTask(props.task.id, form.value);
   } else {
     // Add new task
-    tasksStore.addTask(form.value);
+    tasksStore.addTask({
+      ...form.value,
+      date: props.date || new Date().toISOString().slice(0, 10)
+    });
   }
   closeModal();
 };

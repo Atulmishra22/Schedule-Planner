@@ -42,7 +42,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="bg-primary-800 rounded-xl border border-primary-700 p-6">
         <div class="flex items-center gap-3 mb-2">
-          <span class="text-2xl">✓</span>
+          <svg class="w-6 h-6 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <span class="text-neutral-400 text-sm">Completed</span>
         </div>
         <p class="text-3xl font-bold text-success-400">{{ completedCount }}</p>
@@ -50,7 +52,10 @@
       
       <div class="bg-primary-800 rounded-xl border border-primary-700 p-6">
         <div class="flex items-center gap-3 mb-2">
-          <span class="text-2xl">→</span>
+          <svg class="w-6 h-6 text-accent-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" opacity="0.5" />
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+          </svg>
           <span class="text-neutral-400 text-sm">In Progress</span>
         </div>
         <p class="text-3xl font-bold text-accent-400">{{ inProgressCount }}</p>
@@ -58,7 +63,9 @@
       
       <div class="bg-primary-800 rounded-xl border border-primary-700 p-6">
         <div class="flex items-center gap-3 mb-2">
-          <span class="text-2xl">○</span>
+          <svg class="w-6 h-6 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <span class="text-neutral-400 text-sm">Pending</span>
         </div>
         <p class="text-3xl font-bold text-neutral-400">{{ pendingCount }}</p>
@@ -66,7 +73,11 @@
       
       <div class="bg-primary-800 rounded-xl border border-primary-700 p-6">
         <div class="flex items-center gap-3 mb-2">
-          <span class="text-2xl">🔥</span>
+          <svg class="w-6 h-6 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.0001 17.75C11.5859 17.75 11.2501 17.4142 11.2501 17V11C11.2501 10.5858 11.5859 10.25 12.0001 10.25C12.4143 10.25 12.7501 10.5858 12.7501 11V17C12.7501 17.4142 12.4143 17.75 12.0001 17.75Z" />
+            <path d="M12.0001 8.5C12.6905 8.5 13.2501 7.94036 13.2501 7.25C13.2501 6.55964 12.6905 6 12.0001 6C11.3097 6 10.7501 6.55964 10.7501 7.25C10.7501 7.94036 11.3097 8.5 12.0001 8.5Z" />
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M7.42596 3.85984C8.59096 2.2082 10.2198 1.25 12.0001 1.25C13.7804 1.25 15.4092 2.2082 16.5742 3.85984C17.7236 5.48878 18.5001 7.71898 18.5001 10C18.5001 12.281 17.7236 14.5112 16.5742 16.1402C15.4092 17.7918 13.7804 18.75 12.0001 18.75C10.2198 18.75 8.59096 17.7918 7.42596 16.1402C6.27656 14.5112 5.50012 12.281 5.50012 10C5.50012 7.71898 6.27656 5.48878 7.42596 3.85984ZM8.57425 4.64016C7.59575 6.01122 6.90625 8.03102 6.90625 10C6.90625 11.969 7.59575 13.9888 8.57425 15.3598C9.53791 16.7082 10.7177 17.25 12.0001 17.25C13.2825 17.25 14.4623 16.7082 15.4259 15.3598C16.4044 13.9888 17.0939 11.969 17.0939 10C17.0939 8.03102 16.4044 6.01122 15.4259 4.64016C14.4623 3.2918 13.2825 2.75 12.0001 2.75C10.7177 2.75 9.53791 3.2918 8.57425 4.64016Z" />
+          </svg>
           <span class="text-neutral-400 text-sm">Streak</span>
         </div>
         <p class="text-3xl font-bold text-warning-500">{{ streak }} days</p>

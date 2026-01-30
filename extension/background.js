@@ -1,13 +1,6 @@
 // Background service worker for Chrome extension
 console.log('Schedule Planner extension loaded');
 
-// Open app in new tab when extension icon is clicked
-chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({
-    url: chrome.runtime.getURL('index.html')
-  });
-});
-
 // Set up alarm for daily rollover check
 chrome.alarms.create('dailyRollover', {
   delayInMinutes: 1,

@@ -53,55 +53,25 @@
       <div class="col-span-8">
         <div class="bg-primary-800 rounded-xl border border-primary-700 p-6">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-semibold text-neutral-100">Timeline</h2>
-            <div class="flex items-center gap-4 text-sm text-neutral-400">
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-success-500"></div>
-                <span>Completed</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></div>
-                <span>In Progress</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-neutral-400"></div>
-                <span>Pending</span>
-              </div>
-            </div>
+            <h2 class="text-xl font-semibold text-neutral-100">24-Hour Overview</h2>
           </div>
           
-          <!-- Timeline -->
-          <div class="relative">
-            <!-- Current Time Indicator (only for today) -->
-            <div 
-              v-if="isToday && currentTimePosition"
-              class="absolute left-0 right-0 z-20 flex items-center"
-              :style="{ top: currentTimePosition + 'px' }"
-            >
-              <div class="flex items-center w-full">
-                <div class="w-16 text-xs text-accent-400 font-medium">
-                  {{ currentTime }}
-                </div>
-                <div class="flex-1 h-0.5 bg-accent-400"></div>
-                <div class="w-3 h-3 rounded-full bg-accent-400 border-2 border-primary-900"></div>
-              </div>
-            </div>
+          <!-- 24-Hour Clock Chart -->
+          <div class="flex justify-center py-6">
+            <DailyClockChart :tasks="sortedTasks" :date="currentDate" />
+          </div>
+          
+          <!-- Tasks List -->
+          <div class="mt-8">
+            <h3 class="text-lg font-semibold text-neutral-100 mb-4">Tasks</h3>
             
             <!-- Tasks Timeline -->
             <div class="space-y-2">
               <div 
                 v-for="task in sortedTasks" 
                 :key="task.id"
-                class="relative pl-20"
+                class="relative"
               >
-                <!-- Time Label -->
-                <div class="absolute left-0 top-4 text-sm font-mono text-neutral-400">
-                  {{ task.timeSlot || '--:--' }}
-                </div>
-                
-                <!-- Timeline Line -->
-                <div class="absolute left-16 top-0 bottom-0 w-px bg-primary-700"></div>
-                
                 <!-- Task Card -->
                 <div class="relative">
                   <TaskCard 
@@ -235,7 +205,9 @@
               class="w-full px-4 py-3 bg-primary-700 hover:bg-primary-600 text-neutral-300 rounded-lg text-sm font-medium transition-colors text-left flex items-center gap-3"
               @click="copyFromPreviousDay"
             >
-              <span class="text-lg">📋</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
               <span>Copy Previous Day</span>
             </button>
             
@@ -245,7 +217,9 @@
               :disabled="sortedTasks.length === 0"
               :class="{ 'opacity-50 cursor-not-allowed': sortedTasks.length === 0 }"
             >
-              <span class="text-lg">🗑️</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
               <span>Clear All Tasks</span>
             </button>
             
@@ -255,7 +229,9 @@
               :disabled="sortedTasks.length === 0"
               :class="{ 'opacity-50 cursor-not-allowed': sortedTasks.length === 0 }"
             >
-              <span class="text-lg">📤</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
               <span>Export Schedule</span>
             </button>
           </div>
@@ -265,11 +241,10 @@
     
     <!-- Task Modal -->
     <TaskModal 
-      v-if="showTaskModal"
+      :is-open="showTaskModal"
       :task="selectedTask"
       :date="currentDate"
       @close="closeTaskModal"
-      @save="saveTask"
     />
   </div>
 </template>
@@ -280,6 +255,7 @@ import { useTasksStore } from '@/stores/tasks';
 import { useTimeTrackingStore } from '@/stores/timeTracking';
 import TaskCard from '@/components/tasks/TaskCard.vue';
 import TaskModal from '@/components/tasks/TaskModal.vue';
+import DailyClockChart from '@/components/schedule/DailyClockChart.vue';
 
 const tasksStore = useTasksStore();
 const timeStore = useTimeTrackingStore();
@@ -478,20 +454,6 @@ const viewTaskDetails = (task) => {
 const closeTaskModal = () => {
   showTaskModal.value = false;
   selectedTask.value = null;
-};
-
-const saveTask = (taskData) => {
-  if (selectedTask.value) {
-    // Update existing task
-    tasksStore.updateTask(selectedTask.value.id, taskData);
-  } else {
-    // Create new task
-    tasksStore.addTask({
-      ...taskData,
-      date: currentDate.value
-    });
-  }
-  closeTaskModal();
 };
 
 const copyFromPreviousDay = () => {

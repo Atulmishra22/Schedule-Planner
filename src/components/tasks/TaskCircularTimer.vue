@@ -109,7 +109,9 @@
                  rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           @click="startTask"
         >
-          <span>▶</span>
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+          </svg>
           <span>Start</span>
         </button>
         
@@ -119,7 +121,9 @@
                  rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           @click="pauseTask"
         >
-          <span>⏸</span>
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z" />
+          </svg>
           <span>Pause</span>
         </button>
         
@@ -128,7 +132,9 @@
                  rounded-lg font-medium transition-colors flex items-center justify-center"
           @click="completeTask"
         >
-          ✓
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          </svg>
         </button>
         
         <button 
@@ -138,7 +144,9 @@
           @click="deleteTask"
           title="Delete Task"
         >
-          🗑️
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
         </button>
       </div>
       

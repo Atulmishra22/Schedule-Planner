@@ -6,14 +6,16 @@
   "permissions": [
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "tabs"
   ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "Open Schedule Planner"
+    "default_title": "Schedule Planner",
+    "default_popup": "popup.html"
   },
   "chrome_url_overrides": {
     "newtab": "index.html"

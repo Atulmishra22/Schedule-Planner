@@ -105,25 +105,42 @@ export const useTasksStore = defineStore('tasks', () => {
     const today = new Date().toISOString().slice(0, 10);
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
     
-    // Find incomplete recurring tasks from yesterday
-    const incompleteTasks = tasks.value.filter(task => 
+    // Find all recurring tasks from yesterday (both completed and incomplete)
+    const recurringTasks = tasks.value.filter(task => 
       task.date === yesterday && 
-      task.recurring && 
-      task.status !== 'completed'
+      task.recurring
     );
     
+    // Check if task already exists for today (to avoid duplicates)
+    const existingTodayTasks = tasks.value.filter(task => task.date === today);
+    
     // Create new tasks for today
-    incompleteTasks.forEach(task => {
-      addTask({
-        ...task,
-        id: undefined,
-        date: today,
-        status: 'pending',
-        actualDuration: 0,
-        startedAt: null,
-        completedAt: null,
-        carryOver: true
-      });
+    recurringTasks.forEach(task => {
+      // Check if this recurring task already exists for today
+      const alreadyExists = existingTodayTasks.some(t => 
+        t.title === task.title && 
+        t.timeSlot === task.timeSlot &&
+        t.category === task.category
+      );
+      
+      if (!alreadyExists) {
+        addTask({
+          title: task.title,
+          description: task.description,
+          duration: task.duration,
+          category: task.category,
+          priority: task.priority,
+          timeSlot: task.timeSlot,
+          recurring: task.recurring,
+          tags: task.tags || [],
+          date: today,
+          status: 'pending',
+          actualDuration: 0,
+          startedAt: null,
+          completedAt: null,
+          carryOver: true
+        });
+      }
     });
   };
   

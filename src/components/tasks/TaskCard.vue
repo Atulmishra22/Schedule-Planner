@@ -25,9 +25,10 @@
         
         <!-- Status Badge -->
         <span 
-          class="px-2 py-0.5 rounded text-xs font-medium"
+          class="px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1"
           :class="statusBadgeClass"
         >
+          <span v-html="statusIcon"></span>
           {{ statusBadgeText }}
         </span>
         
@@ -82,50 +83,70 @@
       <button 
         v-if="task.status === 'pending'"
         class="flex-1 px-3 py-2 bg-accent-500 hover:bg-accent-600 
-               text-white rounded-md text-sm font-medium transition-colors"
+               text-white rounded-md text-sm font-medium transition-colors
+               flex items-center justify-center gap-2"
         @click.stop="startTask"
       >
-        Start
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+        </svg>
+        <span>Start</span>
       </button>
       
       <!-- Pause Button (only when in progress) -->
       <button 
         v-if="task.status === 'in-progress'"
         class="flex-1 px-3 py-2 bg-warning-500 hover:bg-warning-600 
-               text-white rounded-md text-sm font-medium transition-colors"
+               text-white rounded-md text-sm font-medium transition-colors
+               flex items-center justify-center gap-2"
         @click.stop="pauseTask"
       >
-        Pause
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z" />
+        </svg>
+        <span>Pause</span>
       </button>
       
       <!-- Complete Button (only when in progress) -->
       <button 
         v-if="task.status === 'in-progress'"
         class="flex-1 px-3 py-2 bg-success-500 hover:bg-success-600 
-               text-white rounded-md text-sm font-medium transition-colors"
+               text-white rounded-md text-sm font-medium transition-colors
+               flex items-center justify-center gap-2"
         @click.stop="completeTask"
       >
-        Complete
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>Complete</span>
       </button>
       
       <!-- Edit Button (only when not in progress and not completed) -->
       <button 
         v-if="task.status === 'pending'"
         class="px-3 py-2 bg-primary-700 hover:bg-primary-600 
-               text-neutral-300 rounded-md text-sm transition-colors"
+               text-neutral-300 rounded-md text-sm transition-colors
+               flex items-center justify-center gap-2"
         @click.stop="editTask"
       >
-        Edit
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        <span>Edit</span>
       </button>
       
       <!-- Delete Button (always shown when actions are enabled) -->
       <button 
         class="px-3 py-2 bg-error-500/20 hover:bg-error-500/30 
-               text-error-400 rounded-md text-sm transition-colors"
+               text-error-400 rounded-md text-sm transition-colors
+               flex items-center justify-center gap-2"
         :class="{ 'flex-1': task.status === 'completed' }"
         @click.stop="deleteTask"
       >
-        🗑
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>Delete</span>
       </button>
     </div>
   </div>
@@ -175,13 +196,26 @@ const statusBadgeClass = computed(() => {
 const statusBadgeText = computed(() => {
   switch (props.task.status) {
     case 'completed': 
-      return '✓ Completed';
+      return 'Completed';
     case 'in-progress': 
-      return '▶ In Progress';
+      return 'In Progress';
     case 'pending': 
-      return '○ Pending';
+      return 'Pending';
     default: 
       return props.task.status;
+  }
+});
+
+const statusIcon = computed(() => {
+  switch (props.task.status) {
+    case 'completed':
+      return '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>';
+    case 'in-progress':
+      return '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" /></svg>';
+    case 'pending':
+      return '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+    default:
+      return '';
   }
 });
 

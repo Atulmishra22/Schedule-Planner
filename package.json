@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:extension": "vite build && npm run copy:extension",
-    "copy:extension": "powershell -Command \"Copy-Item extension/manifest.json dist/ -Force; Copy-Item extension/background.js dist/ -Force; if (Test-Path extension/icons) { Copy-Item extension/icons dist/ -Recurse -Force }\""
+    "build:extension": "vite build && node scripts/build-extension.js"
   },
   "dependencies": {
     "@crxjs/vite-plugin": "^2.3.0",
