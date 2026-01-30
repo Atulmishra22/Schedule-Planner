@@ -1,6 +1,7 @@
 // stores/tasks.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { getTodayLocal, getYesterdayLocal } from '../utils/dateHelpers';
 
 export const useTasksStore = defineStore('tasks', () => {
   // State
@@ -9,7 +10,7 @@ export const useTasksStore = defineStore('tasks', () => {
   
   // Getters
   const todayTasks = computed(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getTodayLocal();
     return tasks.value
       .filter(task => task.date === today)
       .sort((a, b) => (a.timeSlot || '').localeCompare(b.timeSlot || ''));
@@ -36,9 +37,10 @@ export const useTasksStore = defineStore('tasks', () => {
     const task = {
       id: generateId(),
       ...taskData,
-      date: taskData.date || new Date().toISOString().slice(0, 10), // Default to today
+      date: taskData.date || getTodayLocal(), // Default to today (local timezone)
       timeSlot: taskData.timeSlot || '', // Default to empty string
       status: 'pending',
+      timeSegments: [], // Track actual work sessions
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -70,23 +72,78 @@ export const useTasksStore = defineStore('tasks', () => {
   const startTask = (taskId) => {
     // Stop any active tasks
     if (activeTaskId.value) {
-      updateTask(activeTaskId.value, { 
-        status: 'pending',
-        startedAt: null 
-      });
+      stopTask(activeTaskId.value);
     }
+    
+    const task = tasks.value.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const timeSegments = task.timeSegments || [];
+    const now = new Date().toISOString();
+    
+    // Add new active segment
+    timeSegments.push({
+      startTime: now,
+      endTime: null // null means still running
+    });
     
     updateTask(taskId, { 
       status: 'in-progress',
-      startedAt: new Date().toISOString()
+      startedAt: now,
+      timeSegments
     });
     activeTaskId.value = taskId;
   };
   
+  const stopTask = (taskId) => {
+    const task = tasks.value.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const timeSegments = task.timeSegments || [];
+    const now = new Date().toISOString();
+    
+    // Close the last active segment
+    const lastSegment = timeSegments[timeSegments.length - 1];
+    if (lastSegment && lastSegment.endTime === null) {
+      lastSegment.endTime = now;
+    }
+    
+    // Calculate total actual duration
+    const actualDuration = calculateActualDuration(timeSegments);
+    
+    updateTask(taskId, { 
+      status: 'pending',
+      startedAt: null,
+      timeSegments,
+      actualDuration
+    });
+    
+    if (activeTaskId.value === taskId) {
+      activeTaskId.value = null;
+    }
+  };
+  
   const completeTask = (taskId) => {
+    const task = tasks.value.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const timeSegments = task.timeSegments || [];
+    const now = new Date().toISOString();
+    
+    // Close any active segment
+    const lastSegment = timeSegments[timeSegments.length - 1];
+    if (lastSegment && lastSegment.endTime === null) {
+      lastSegment.endTime = now;
+    }
+    
+    // Calculate total actual duration
+    const actualDuration = calculateActualDuration(timeSegments);
+    
     updateTask(taskId, { 
       status: 'completed',
-      completedAt: new Date().toISOString()
+      completedAt: now,
+      timeSegments,
+      actualDuration
     });
     
     if (activeTaskId.value === taskId) {
@@ -95,15 +152,14 @@ export const useTasksStore = defineStore('tasks', () => {
   };
   
   const pauseTask = (taskId) => {
-    updateTask(taskId, { status: 'pending' });
-    if (activeTaskId.value === taskId) {
-      activeTaskId.value = null;
-    }
+    stopTask(taskId);
   };
   
   const rolloverTasks = () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const today = getTodayLocal();
+    const yesterday = getYesterdayLocal();
+    
+    console.log(`Rollover: Creating recurring tasks from ${yesterday} to ${today}`);
     
     // Find all recurring tasks from yesterday (both completed and incomplete)
     const recurringTasks = tasks.value.filter(task => 
@@ -146,6 +202,7 @@ export const useTasksStore = defineStore('tasks', () => {
   
   const saveTasks = () => {
     localStorage.setItem('tasks', JSON.stringify(tasks.value));
+    localStorage.setItem('activeTaskId', activeTaskId.value || '');
   };
   
   const loadTasks = () => {
@@ -153,10 +210,29 @@ export const useTasksStore = defineStore('tasks', () => {
     if (stored) {
       tasks.value = JSON.parse(stored);
     }
+    
+    // Load active task ID
+    const storedActiveId = localStorage.getItem('activeTaskId');
+    if (storedActiveId) {
+      activeTaskId.value = storedActiveId;
+    }
   };
   
   const generateId = () => {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+  
+  const calculateActualDuration = (timeSegments) => {
+    if (!timeSegments || timeSegments.length === 0) return 0;
+    
+    let totalMs = 0;
+    timeSegments.forEach(segment => {
+      const start = new Date(segment.startTime).getTime();
+      const end = segment.endTime ? new Date(segment.endTime).getTime() : Date.now();
+      totalMs += (end - start);
+    });
+    
+    return Math.floor(totalMs / 60000); // Convert to minutes
   };
   
   return {
@@ -171,9 +247,11 @@ export const useTasksStore = defineStore('tasks', () => {
     updateTask,
     deleteTask,
     startTask,
+    stopTask,
     completeTask,
     pauseTask,
     rolloverTasks,
-    loadTasks
+    loadTasks,
+    calculateActualDuration
   };
 });

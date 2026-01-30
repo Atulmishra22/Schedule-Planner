@@ -14,8 +14,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Schedule Planner",
-    "default_popup": "popup.html"
+    "default_title": "Schedule Planner"
   },
   "chrome_url_overrides": {
     "newtab": "index.html"

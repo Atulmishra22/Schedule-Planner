@@ -39,14 +39,24 @@
           {{ hour }}
         </text>
         
-        <!-- Task segments -->
+        <!-- Scheduled task segments (thin) -->
         <path
-          v-for="(segment, index) in taskSegments"
-          :key="`segment-${index}`"
+          v-for="(segment, index) in scheduledSegments"
+          :key="`scheduled-${index}`"
           :d="segment.path"
           :fill="segment.color"
           :opacity="segment.opacity"
-          class="task-segment"
+          class="scheduled-segment"
+        />
+        
+        <!-- Actual time tracking segments (wide) -->
+        <path
+          v-for="(segment, index) in trackingSegments"
+          :key="`tracking-${index}`"
+          :d="segment.path"
+          :fill="segment.color"
+          :opacity="segment.opacity"
+          class="tracking-segment"
         />
         
         <!-- Current time indicator -->
@@ -101,17 +111,31 @@
     
     <!-- Legend -->
     <div class="legend">
-      <div class="legend-item">
-        <div class="legend-color" style="background: #10b981"></div>
-        <span>Completed</span>
+      <div class="legend-section">
+        <div class="legend-title">Scheduled (Thin)</div>
+        <div class="legend-item">
+          <div class="legend-color thin" style="background: #475569"></div>
+          <span>Planned Time</span>
+        </div>
       </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: #3b82f6"></div>
-        <span>In Progress</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: #64748b"></div>
-        <span>Pending</span>
+      <div class="legend-section">
+        <div class="legend-title">Actual Work (Wide)</div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #22c55e"></div>
+          <span>On Schedule ✨</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #10b981"></div>
+          <span>Off Schedule</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #fbbf24"></div>
+          <span>Active (On Time) 🎯</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #3b82f6"></div>
+          <span>Active (Off Time)</span>
+        </div>
       </div>
     </div>
   </div>
@@ -119,6 +143,7 @@
 
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { getTodayLocal } from '../../utils/dateHelpers';
 
 const props = defineProps({
   tasks: {
@@ -136,6 +161,8 @@ const centerX = size / 2;
 const centerY = size / 2;
 const radius = 160;
 const strokeWidth = 40;
+const scheduledStrokeWidth = 20; // Thin for scheduled tasks
+const trackingStrokeWidth = 45; // Wide for actual tracking
 const currentTime = ref(new Date());
 
 let timeInterval = null;
@@ -150,7 +177,7 @@ const formattedDate = computed(() => {
 });
 
 const showCurrentTime = computed(() => {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayLocal();
   return props.date === today;
 });
 
@@ -158,18 +185,20 @@ const hourLabels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17
 
 const totalMinutes = computed(() => {
   return props.tasks
-    .filter(task => task.status === 'completed' || task.status === 'in-progress')
+    .filter(task => task.timeSegments && task.timeSegments.length > 0)
     .reduce((sum, task) => {
-      if (task.actualDuration) return sum + task.actualDuration;
-      if (task.status === 'in-progress' && task.startedAt) {
-        const elapsed = Math.floor((Date.now() - new Date(task.startedAt).getTime()) / 60000);
-        return sum + elapsed;
-      }
-      return sum;
+      let taskTotal = 0;
+      task.timeSegments.forEach(segment => {
+        const start = new Date(segment.startTime).getTime();
+        const end = segment.endTime ? new Date(segment.endTime).getTime() : Date.now();
+        taskTotal += (end - start);
+      });
+      return sum + Math.floor(taskTotal / 60000);
     }, 0);
 });
 
-const taskSegments = computed(() => {
+// Scheduled task segments (thin, background)
+const scheduledSegments = computed(() => {
   const segments = [];
   
   props.tasks.forEach(task => {
@@ -180,39 +209,97 @@ const taskSegments = computed(() => {
     const startHour = hours + minutes / 60;
     const duration = (task.duration || 0) / 60; // Convert minutes to hours
     
-    let color, opacity;
-    
-    switch (task.status) {
-      case 'completed':
-        color = '#10b981';
-        opacity = 0.9;
-        break;
-      case 'in-progress':
-        color = '#3b82f6';
-        opacity = 0.95;
-        break;
-      default:
-        color = '#64748b';
-        opacity = 0.6;
-    }
+    if (duration === 0) return;
     
     segments.push({
-      path: createArcPath(startHour, startHour + duration),
-      color,
-      opacity
+      path: createArcPath(startHour, startHour + duration, scheduledStrokeWidth),
+      color: '#475569', // Gray for scheduled
+      opacity: 0.4
     });
   });
   
   return segments;
 });
 
-function createArcPath(startHour, endHour) {
+// Check if actual work overlaps with scheduled time
+function isOnSchedule(task, segmentStartHour, segmentEndHour) {
+  if (!task.timeSlot) return false;
+  
+  const [hours, minutes] = task.timeSlot.split(':').map(Number);
+  const scheduledStart = hours + minutes / 60;
+  const scheduledEnd = scheduledStart + (task.duration || 0) / 60;
+  
+  // Check for overlap with tolerance of 15 minutes (0.25 hours)
+  const tolerance = 0.25;
+  const hasOverlap = !(segmentEndHour < scheduledStart - tolerance || segmentStartHour > scheduledEnd + tolerance);
+  
+  return hasOverlap;
+}
+
+// Actual time tracking segments (wide, foreground)
+const trackingSegments = computed(() => {
+  const segments = [];
+  
+  props.tasks.forEach(task => {
+    // Only render tasks that have actual time segments
+    if (!task.timeSegments || task.timeSegments.length === 0) return;
+    
+    // Render each time segment
+    task.timeSegments.forEach(segment => {
+      const startTime = new Date(segment.startTime);
+      const endTime = segment.endTime ? new Date(segment.endTime) : new Date();
+      
+      // Convert to hours (0-24)
+      const startHours = startTime.getHours();
+      const startMinutes = startTime.getMinutes();
+      const startHour = startHours + startMinutes / 60;
+      
+      const endHours = endTime.getHours();
+      const endMinutes = endTime.getMinutes();
+      const endHour = endHours + endMinutes / 60;
+      
+      // Skip if duration is too small to render
+      if (endHour - startHour < 0.01) return;
+      
+      let color, opacity;
+      
+      // Check if working on schedule - REWARD COLOR!
+      const onSchedule = isOnSchedule(task, startHour, endHour);
+      
+      // Active segment (still running)
+      if (segment.endTime === null) {
+        color = onSchedule ? '#fbbf24' : '#3b82f6'; // Gold if on schedule, blue otherwise
+        opacity = 0.95;
+      }
+      // Completed segments
+      else if (task.status === 'completed') {
+        color = onSchedule ? '#22c55e' : '#10b981'; // Bright green if on schedule
+        opacity = 0.9;
+      }
+      // Paused segments
+      else {
+        color = onSchedule ? '#a3e635' : '#64748b'; // Lime if on schedule, gray otherwise
+        opacity = 0.8;
+      }
+      
+      segments.push({
+        path: createArcPath(startHour, endHour, trackingStrokeWidth),
+        color,
+        opacity
+      });
+    });
+  });
+  
+  return segments;
+});
+
+function createArcPath(startHour, endHour, customStrokeWidth = strokeWidth) {
   // Convert hours to angles (0 hours = top of circle, clockwise)
   const startAngle = (startHour / 24) * 360 - 90;
   const endAngle = (endHour / 24) * 360 - 90;
   
-  const innerRadius = radius - strokeWidth / 2;
-  const outerRadius = radius + strokeWidth / 2;
+  const innerRadius = radius - customStrokeWidth / 2;
+  const outerRadius = radius + customStrokeWidth / 2;
   
   const startAngleRad = (startAngle * Math.PI) / 180;
   const endAngleRad = (endAngle * Math.PI) / 180;
@@ -307,7 +394,7 @@ function updateCurrentTime() {
 }
 
 onMounted(() => {
-  timeInterval = setInterval(updateCurrentTime, 60000); // Update every minute
+  timeInterval = setInterval(updateCurrentTime, 1000); // Update every second for real-time tracking
 });
 
 onUnmounted(() => {
@@ -351,11 +438,19 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-.task-segment {
+.scheduled-segment {
   transition: opacity 0.3s;
 }
 
-.task-segment:hover {
+.scheduled-segment:hover {
+  opacity: 0.6 !important;
+}
+
+.tracking-segment {
+  transition: opacity 0.3s;
+}
+
+.tracking-segment:hover {
   opacity: 1 !important;
 }
 
@@ -403,21 +498,41 @@ onUnmounted(() => {
 
 .legend {
   display: flex;
-  gap: 24px;
+  gap: 32px;
   justify-content: center;
+}
+
+.legend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: #94a3b8;
 }
 
 .legend-color {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   border-radius: 2px;
+}
+
+.legend-color.thin {
+  width: 16px;
+  height: 8px;
 }
 </style>

@@ -16,10 +16,6 @@ copyFileSync(join(extensionDir, 'manifest.json'), join(distDir, 'manifest.json')
 console.log('Copying background.js...');
 copyFileSync(join(extensionDir, 'background.js'), join(distDir, 'background.js'));
 
-// Copy popup.html
-console.log('Copying popup.html...');
-copyFileSync(join(extensionDir, 'popup.html'), join(distDir, 'popup.html'));
-
 // Copy icons directory if it exists
 const iconsDir = join(extensionDir, 'icons');
 if (existsSync(iconsDir)) {

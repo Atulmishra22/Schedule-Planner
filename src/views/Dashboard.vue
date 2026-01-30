@@ -98,15 +98,18 @@ import { computed, ref } from 'vue';
 import { useTasksStore } from '../stores/tasks';
 import { useTimeTrackingStore } from '../stores/timeTracking';
 import { usePomodoroStore } from '../stores/pomodoro';
+import { useAnalyticsStore } from '../stores/analytics';
 import FocusMeter from '../components/dashboard/FocusMeter.vue';
 import PomodoroTimer from '../components/dashboard/PomodoroTimer.vue';
 import CircularTaskTimer from '../components/dashboard/CircularTaskTimer.vue';
 import TaskCircularTimer from '../components/tasks/TaskCircularTimer.vue';
 import TaskModal from '../components/tasks/TaskModal.vue';
+import { getTodayLocal } from '../utils/dateHelpers';
 
 const tasksStore = useTasksStore();
 const timeStore = useTimeTrackingStore();
 const pomodoroStore = usePomodoroStore();
+const analyticsStore = useAnalyticsStore();
 
 const showAddTask = ref(false);
 const editingTask = ref(null);
@@ -126,17 +129,23 @@ const inProgressCount = computed(() => tasksStore.inProgressTasks.length);
 const pendingCount = computed(() => tasksStore.pendingTasksToday.length);
 const streak = computed(() => 0); // Will calculate from analytics
 
+// Use the new variance-based focus score calculation
 const focusScore = computed(() => {
-  if (timeStore.todayEntries.length === 0) return 0;
-  const avgScore = timeStore.todayEntries.reduce((sum, entry) => sum + (entry.focusScore || 0), 0) / timeStore.todayEntries.length;
-  return Math.round(avgScore);
+  const today = getTodayLocal();
+  const dailyAnalytics = analyticsStore.getDailyAnalytics(today);
+  return dailyAnalytics.focusScore || 0;
 });
 
-const focusStats = computed(() => ({
-  today: formatMinutes(timeStore.totalTimeToday),
-  week: '0h',
-  month: '0h'
-}));
+const focusStats = computed(() => {
+  const today = getTodayLocal();
+  const dailyAnalytics = analyticsStore.getDailyAnalytics(today);
+  
+  return {
+    today: formatMinutes(dailyAnalytics.totalActual),
+    week: '0h',
+    month: '0h'
+  };
+});
 
 const formatMinutes = (minutes) => {
   const hours = Math.floor(minutes / 60);

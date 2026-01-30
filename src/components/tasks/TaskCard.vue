@@ -65,7 +65,7 @@
       <div class="flex items-center justify-between mb-1">
         <span class="text-xs text-neutral-400">Progress</span>
         <span class="text-xs text-neutral-400 font-mono">
-          {{ formatTime(task.actualDuration || 0) }} / {{ formatTime(task.duration || task.estimatedDuration || 0) }}
+          {{ formatTime(calculateElapsedMinutes) }} / {{ formatTime(task.duration || task.estimatedDuration || 0) }}
         </span>
       </div>
       
@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   task: Object,
@@ -164,6 +164,40 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['start', 'edit', 'click', 'pause', 'complete', 'delete']);
+
+// Force re-computation every second for live updates
+const currentTime = ref(Date.now());
+let intervalId = null;
+
+onMounted(() => {
+  intervalId = setInterval(() => {
+    if (props.task.status === 'in-progress') {
+      currentTime.value = Date.now();
+    }
+  }, 1000);
+});
+
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId);
+});
+
+// Calculate elapsed time from timeSegments
+const calculateElapsedMinutes = computed(() => {
+  if (!props.task.timeSegments || props.task.timeSegments.length === 0) {
+    return 0;
+  }
+  
+  let totalSeconds = 0;
+  const now = currentTime.value; // Use reactive currentTime
+  
+  props.task.timeSegments.forEach(segment => {
+    const start = new Date(segment.startTime).getTime();
+    const end = segment.endTime ? new Date(segment.endTime).getTime() : now;
+    totalSeconds += Math.floor((end - start) / 1000);
+  });
+  
+  return Math.floor(totalSeconds / 60); // Convert to minutes
+});
 
 const statusColor = computed(() => {
   switch (props.task.status) {
@@ -220,10 +254,12 @@ const statusIcon = computed(() => {
 });
 
 const progress = computed(() => {
-  const seconds = props.task.actualDurationSeconds || (props.task.actualDuration * 60) || 0;
-  const estimatedSeconds = (props.task.duration || props.task.estimatedDuration || 0) * 60;
-  if (seconds === 0 || estimatedSeconds === 0) return 0;
-  return Math.min((seconds / estimatedSeconds) * 100, 100);
+  // Use real-time calculation from timeSegments
+  const elapsedMinutes = calculateElapsedMinutes.value;
+  const estimatedMinutes = props.task.duration || props.task.estimatedDuration || 0;
+  
+  if (elapsedMinutes === 0 || estimatedMinutes === 0) return 0;
+  return Math.min((elapsedMinutes / estimatedMinutes) * 100, 100);
 });
 
 const formatTime = (minutes) => {

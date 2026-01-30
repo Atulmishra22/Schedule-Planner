@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia';
 import { useTasksStore } from './tasks';
 import { useTimeTrackingStore } from './timeTracking';
+import { toLocalDateString } from '../utils/dateHelpers';
 
 export const useAnalyticsStore = defineStore('analytics', () => {
   const tasksStore = useTasksStore();
@@ -19,9 +20,18 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     const tasksCompleted = dayTasks.filter(t => t.status === 'completed').length;
     const tasksSkipped = dayTasks.filter(t => t.status === 'skipped').length;
     
-    const avgFocusScore = dayEntries.length > 0
-      ? dayEntries.reduce((sum, entry) => sum + entry.focusScore, 0) / dayEntries.length
-      : 0;
+    // Calculate focus score based on how closely actual time matches planned time
+    // Perfect match = 100%, larger variance = lower score
+    let focusScore = 0;
+    if (totalPlanned > 0 && totalActual > 0) {
+      const variance = Math.abs(totalActual - totalPlanned);
+      const variancePercentage = (variance / totalPlanned) * 100;
+      // Score decreases as variance increases, min 0, max 100
+      focusScore = Math.max(0, Math.min(100, Math.round(100 - variancePercentage)));
+    } else if (totalPlanned === 0 && totalActual > 0) {
+      // Working without planning gets 50%
+      focusScore = 50;
+    }
     
     const categoryBreakdown = calculateCategoryBreakdown(dayTasks, dayEntries);
     const peakProductivityHour = calculatePeakHour(dayEntries);
@@ -33,7 +43,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
       tasksPlanned,
       tasksCompleted,
       tasksSkipped,
-      focusScore: Math.round(avgFocusScore),
+      focusScore,
       categoryBreakdown,
       peakProductivityHour,
       completionRate: tasksPlanned > 0 
@@ -51,14 +61,17 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
       date.setDate(date.getDate() + i);
-      dailyData.push(getDailyAnalytics(date.toISOString().slice(0, 10)));
+      dailyData.push(getDailyAnalytics(toLocalDateString(date)));
     }
     
     const totalPlanned = dailyData.reduce((sum, day) => sum + day.totalPlanned, 0);
     const totalActual = dailyData.reduce((sum, day) => sum + day.totalActual, 0);
-    const averageFocusScore = Math.round(
-      dailyData.reduce((sum, day) => sum + day.focusScore, 0) / 7
-    );
+    
+    // Calculate average focus score from days with activity
+    const daysWithActivity = dailyData.filter(day => day.totalPlanned > 0 || day.totalActual > 0);
+    const averageFocusScore = daysWithActivity.length > 0
+      ? Math.round(daysWithActivity.reduce((sum, day) => sum + day.focusScore, 0) / daysWithActivity.length)
+      : 0;
     
     const bestDay = dailyData.reduce((best, day) => 
       day.totalActual > best.totalActual ? day : best
@@ -81,8 +94,8 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     const categoryBreakdown = calculateCategoryBreakdown(allTasks, allEntries);
     
     return {
-      weekStart: weekStart.toISOString().slice(0, 10),
-      weekEnd: weekEnd.toISOString().slice(0, 10),
+      weekStart: toLocalDateString(weekStart),
+      weekEnd: toLocalDateString(weekEnd),
       dailyData,
       totalPlanned,
       totalActual,
@@ -117,9 +130,12 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     
     const totalPlanned = weeklyData.reduce((sum, week) => sum + week.totalPlanned, 0);
     const totalActual = weeklyData.reduce((sum, week) => sum + week.totalActual, 0);
-    const averageFocusScore = Math.round(
-      weeklyData.reduce((sum, week) => sum + week.averageFocusScore, 0) / weeklyData.length
-    );
+    
+    // Calculate average focus score from weeks with data
+    const weeksWithData = weeklyData.filter(week => week.totalPlanned > 0 || week.totalActual > 0);
+    const averageFocusScore = weeksWithData.length > 0
+      ? Math.round(weeksWithData.reduce((sum, week) => sum + week.averageFocusScore, 0) / weeksWithData.length)
+      : 0;
     
     const bestWeek = weeklyData.reduce((best, week, index) => 
       week.totalActual > weeklyData[best].totalActual ? index : best
@@ -232,8 +248,9 @@ export const useAnalyticsStore = defineStore('analytics', () => {
         return entryHour === hour;
       });
       
+      // Use total time as productivity indicator instead of non-existent focusScore
       const productivity = hourEntries.length > 0
-        ? Math.round(hourEntries.reduce((sum, entry) => sum + entry.focusScore, 0) / hourEntries.length)
+        ? hourEntries.reduce((sum, entry) => sum + entry.duration, 0)
         : 0;
       
       const tasksCompleted = hourEntries.filter(entry => {

@@ -167,6 +167,7 @@
 import { ref, watch } from 'vue';
 import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { useTasksStore } from '../../stores/tasks';
+import { getTodayLocal } from '../../utils/dateHelpers';
 
 const props = defineProps({
   isOpen: {
@@ -228,15 +229,30 @@ const closeModal = () => {
 };
 
 const handleSubmit = () => {
+  // Validate required fields
+  if (!form.value.title || !form.value.title.trim()) {
+    alert('Please enter a task title');
+    return;
+  }
+  
+  if (!form.value.duration || form.value.duration < 1) {
+    alert('Please enter a valid duration (at least 1 minute)');
+    return;
+  }
+  
+  console.log('Submitting task:', form.value);
+  
   if (props.task) {
     // Update existing task
     tasksStore.updateTask(props.task.id, form.value);
   } else {
     // Add new task
-    tasksStore.addTask({
+    const taskData = {
       ...form.value,
-      date: props.date || new Date().toISOString().slice(0, 10)
-    });
+      date: props.date || getTodayLocal()
+    };
+    console.log('Adding task with data:', taskData);
+    tasksStore.addTask(taskData);
   }
   closeModal();
 };

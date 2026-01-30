@@ -33,10 +33,17 @@
         <!-- Right Actions -->
         <div class="flex items-center gap-2">
           <button 
-            class="p-2 hover:bg-primary-700 rounded-md transition-colors"
+            @click="toggleNotifications"
+            class="p-2 hover:bg-primary-700 rounded-md transition-colors relative"
             title="Notifications"
           >
             <span class="text-neutral-300 text-xl">🔔</span>
+            <span 
+              v-if="unreadCount > 0"
+              class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"
+            >
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
           </button>
           <button 
             @click="$router.push('/settings')"
@@ -48,14 +55,31 @@
         </div>
       </div>
     </div>
+    
+    <!-- Notification Panel -->
+    <NotificationPanel 
+      :isOpen="showNotifications" 
+      @close="showNotifications = false"
+    />
   </header>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useNotificationsStore } from '../../stores/notifications';
+import NotificationPanel from './NotificationPanel.vue';
 
 const route = useRoute();
+const notificationsStore = useNotificationsStore();
+
+const showNotifications = ref(false);
+
+const unreadCount = computed(() => notificationsStore.unreadCount);
+
+const toggleNotifications = () => {
+  showNotifications.value = !showNotifications.value;
+};
 
 const navLinks = [
   { name: 'Dashboard', path: '/', icon: '📊' },

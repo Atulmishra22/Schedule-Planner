@@ -32,3 +32,8 @@ function checkRollover() {
     }
   });
 }
+
+// Handle extension icon click - open app in new tab
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.create({ url: 'index.html' });
+});

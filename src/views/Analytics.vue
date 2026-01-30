@@ -222,6 +222,7 @@ import { useAnalyticsStore } from '../stores/analytics';
 import { formatMinutes } from '../utils/formatters';
 import ProgressChart from '../components/analytics/ProgressChart.vue';
 import CategoryChart from '../components/analytics/CategoryChart.vue';
+import { getTodayLocal } from '../utils/dateHelpers';
 
 const analyticsStore = useAnalyticsStore();
 
@@ -235,7 +236,7 @@ const tabs = [
   { id: 'month', name: 'Monthly' }
 ];
 
-const today = new Date().toISOString().slice(0, 10);
+const today = getTodayLocal();
 const weekStart = computed(() => {
   const date = new Date();
   const day = date.getDay();

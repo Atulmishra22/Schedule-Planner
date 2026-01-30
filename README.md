@@ -1,6 +1,6 @@
 # Schedule Planner - Time Management Application
 
-A professional productivity application built with Vue 3 for task-based scheduling, Pomodoro technique integration, and time analytics. Available as both a web application and Chrome extension.
+A professional productivity application built with Vue 3 for task-based scheduling, real-time time tracking, and comprehensive analytics. Available as both a web application and Chrome extension.
 
 ![Vue.js](https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=flat&logo=vue.js&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
@@ -11,90 +11,122 @@ A professional productivity application built with Vue 3 for task-based scheduli
 
 ## 🎯 Purpose & Vision
 
-**Schedule Planner** is not just another task manager—it's a comprehensive time intelligence platform that bridges the gap between planning and execution. While traditional task planners focus on what to do and schedule managers focus on when to do it, Schedule Planner revolutionizes productivity by tracking **how well you actually execute** your plans.
+**Schedule Planner** is a comprehensive time intelligence platform that bridges planning and execution. It tracks not just what you plan, but **how and when you actually work**, providing real-time insights and visual feedback.
 
 ### The Core Problem We Solve
 
-Most productivity apps fail because they create a disconnect between planning and reality. You plan your day with optimistic estimates, but have no visibility into:
-- How much time you *actually* spend on tasks vs. what you planned
-- Where your focus breaks down during execution
-- What patterns lead to productive vs. unproductive days
-- How to improve your time estimation accuracy over time
+Most productivity apps create a disconnect between planning and reality. You plan optimistically, but have no visibility into:
+- When you *actually* work on tasks vs. when you scheduled them
+- How your actual work time compares to planned duration
+- Real-time progress and accountability during task execution
+- Patterns showing when you're most productive vs. when you planned to be
 
-**Schedule Planner** solves this by combining:
-1. **Visual Time Planning** - 24-hour circular clock view for intuitive scheduling
-2. **Active Time Tracking** - Real-time monitoring with pause/resume capabilities
-3. **Focus Intelligence** - Automated focus scores based on work-to-break ratios
-4. **Pomodoro Integration** - Structured work intervals that sync with task tracking
-5. **Behavioral Analytics** - Insights into your productivity patterns and peak performance hours
+**Schedule Planner** solves this with:
+1. **Dual-Layer Time Visualization** - See both planned schedule AND actual work sessions on a 24-hour clock
+2. **Real-Time Tracking** - Live monitoring that updates every second with automatic completion
+3. **Reward System** - Visual feedback (gold colors) when you work on schedule
+4. **Smart Notifications** - Sound and browser alerts when tasks complete
+5. **Focus Intelligence** - Automated scores based on planned vs. actual efficiency
+6. **Multi-Session Support** - Track multiple work sessions per task with pause/resume
 
-### What Makes Us Different
+### Revolutionary Features
 
-| Feature | Traditional Task Planners | Schedule Managers | **Schedule Planner** |
-|---------|--------------------------|-------------------|---------------------|
-| Task Lists | ✅ | ✅ | ✅ |
-| Time Blocking | ❌ | ✅ | ✅ |
-| **Real-time Tracking** | ❌ | ❌ | ✅ |
-| **Planned vs Actual Analysis** | ❌ | ❌ | ✅ |
-| **Focus Score Calculation** | ❌ | ❌ | ✅ |
-| **24-Hour Circular Visualization** | ❌ | ❌ | ✅ |
-| **Pomodoro + Task Timer Sync** | ❌ | ❌ | ✅ |
-| **Pause/Break Tracking** | ❌ | ❌ | ✅ |
-| **Recurring Task Automation** | ✅ | Limited | ✅ |
-| **Peak Performance Insights** | ❌ | ❌ | ✅ |
-| **Category-Based Analytics** | Limited | ❌ | ✅ |
-| **Offline-First Privacy** | Limited | Limited | ✅ |
+| Feature | Traditional Apps | **Schedule Planner** |
+|---------|-----------------|---------------------|
+| **Time Segments Tracking** | ❌ | ✅ Real-time work sessions |
+| **Dual-Layer Clock** | ❌ | ✅ Scheduled + Actual overlay |
+| **On-Schedule Rewards** | ❌ | ✅ Gold colors for punctuality |
+| **Auto-Completion** | ❌ | ✅ Sound + notification |
+| **Real-Time Updates** | ❌ | ✅ Every second refresh |
+| **Multiple Sessions/Task** | ❌ | ✅ Pause/resume tracking |
+| **Visual Time Comparison** | ❌ | ✅ Thin vs. wide segments |
+| **Focus Score (AI)** | ❌ | ✅ Variance-based calculation |
+| **Cross-Platform Notifications** | Limited | ✅ Web + Extension |
 
 ### Key Differentiators
 
-🔥 **Dual Timer System**: Independent task timer + Pomodoro timer working in harmony  
-📊 **Visual Time Intelligence**: 24-hour circular clock showing your entire day at a glance  
-🎯 **Focus Score Algorithm**: Automatically calculates productivity based on actual work vs. breaks  
-⏱️ **Second-Level Precision**: Real-time tracking updates every second for accurate time awareness  
-📈 **Predictive Analytics**: Learn from your patterns to improve future time estimates  
-🔄 **Smart Task Rollover**: Recurring tasks automatically carry forward with customizable rules  
-🌓 **Dual-Platform Design**: Seamless experience as both web app and Chrome extension  
-🔒 **Privacy-First Architecture**: 100% local storage, no cloud, no tracking, complete data ownership
+🔥 **Real-Time Work Tracking**: Monitors actual work sessions, not just planned time  
+📊 **24-Hour Dual-Layer Clock**: Shows both your plan (thin) and reality (wide) simultaneously  
+🎯 **Smart Reward System**: Gold/bright colors when you work exactly when scheduled  
+⏱️ **Live Progress Tracking**: Updates every second with growing visual segments  
+🔔 **Auto-Complete with Alerts**: Sound + notification when scheduled time ends  
+🎨 **Visual Time Intelligence**: Instantly see gaps between planning and execution  
+🔄 **Multi-Session Tasks**: Track start/pause/resume cycles for each task  
+🌓 **Dual-Platform**: Seamless experience as web app and Chrome extension  
+🔒 **Privacy-First**: 100% local storage, zero cloud, complete data ownership
 
 ## ✨ Comprehensive Feature Set
 
 ### 📊 Dashboard - Your Command Center
-- **Circular Task Timer**: 
+
+- **Circular Task Timer with Auto-Complete**: 
   - Real-time visual countdown with second-level precision
-  - Color-coded progress states (green → blue → yellow → red)
+  - Color-coded progress (blue → gold/green → warning)
   - Live MM:SS display with percentage completion
-  - Pause/resume with automatic duration tracking
+  - **Auto-completion when time expires**: Sound + notification + automatic status update
+  - Pause/resume with automatic time segment tracking
+  - Multiple work session support per task
   - Actual vs. planned time comparison
+
+- **Smart Notifications System**: 
+  - **Cross-platform support**: Works in both web app and Chrome extension
+  - **Automatic triggers**: When scheduled duration completes
+  - **Two-tone sound alert**: Pleasant notification beep
+  - **Browser notifications**: Desktop popup with task details
+  - **Auto-complete**: Task marks complete 1 second after notification
 
 - **Integrated Pomodoro Timer**: 
   - Independent operation from task timer
   - Configurable work/break intervals (15-60 min work, 3-15 min short break, 10-30 min long break)
   - Automatic phase transitions (work → short break → work → long break)
   - Session counter with automatic reset
-  - Desktop notifications for phase changes
   - Auto-pause task tracking during Pomodoro breaks
 
-- **Focus Meter**: 
-  - Real-time focus score calculation (0-100 scale)
-  - Daily, weekly, and monthly productivity tracking
-  - Work-to-break ratio analysis
+- **Focus Meter with Smart Calculation**: 
+  - **Variance-based focus score** (0-100 scale) calculated from actual vs. planned efficiency
+  - Formula: `100 - (|actual - planned| / planned × 100)`
+  - Perfect match (actual ≈ planned) = 100% score
+  - Variance increases = score decreases proportionally
+  - No plan but working = 50% base score
+  - Planned but no work = 0% score
+  - Daily, weekly, and monthly tracking
   - Streak tracking for consecutive productive days
-  - Visual gauge with color-coded performance zones
 
-- **Quick Stats Dashboard**: 
-  - Completed tasks count with visual indicators
-  - In-progress task monitoring
-  - Pending task queue overview
-  - Productivity streak display (consecutive days)
+- **Notification System**: 
+  - **Real-time notification panel** with sliding drawer interface
+  - **Unread badge counter** on notification bell icon
+  - **Auto-cleanup**: Notifications older than 3 days automatically removed
+  - **Persistent storage**: All notifications saved to localStorage
+  - **Event triggers**: Task completion, auto-complete, pause events
+  - **Visual indicators**: Icons, timestamps, read/unread status
+  - **Time formatting**: "Just now", "5m ago", "2h ago" display
 
-### 📅 Schedule View - Visual Time Planning
-- **24-Hour Circular Clock Chart**: 
-  - Revolutionary circular timeline showing entire day at a glance
-  - Color-coded task segments by category
+### 📅 Schedule View - Revolutionary Time Visualization
+
+- **24-Hour Dual-Layer Clock Chart**: 
+  - **Two visual layers on single clock**:
+    - **Thin segments (background)**: Your planned schedule
+    - **Wide segments (foreground)**: Your actual work sessions
+  - **Real-time growing segments**: Active tasks expand every second
+  - **Reward color system**:
+    - 🎯 **Gold (#fbbf24)**: Currently working on schedule
+    - ✨ **Bright Green (#22c55e)**: Completed work done on schedule
+    - **Lime (#a3e635)**: Paused work that was on schedule
+    - **Blue (#3b82f6)**: Working but off schedule
+    - **Normal Green**: Completed but off schedule
+    - **Gray**: Paused off-schedule work
+  - **15-minute tolerance window**: Flexible schedule matching
   - Hour markers with major/minor indicators (0-23 hours)
-  - Current time hand with real-time position
-  - Visual overlap detection for scheduling conflicts
-  - Category-based color coding (work, personal, learning, health, creative)
+  - Current time indicator (blue line) updates in real-time
+  - Visual comparison: planned vs. actual work periods
+
+- **Time Segments Tracking System**: 
+  - **Multiple sessions per task**: Each start/stop creates a new segment
+  - **Real-time segment growth**: Active segment shows current duration
+  - **Session history**: All work periods stored with start/end times
+  - **Automatic duration calculation**: Total from all segments
+  - **Pause/resume support**: Stop creates endpoint, start creates new segment
+  - **Visual on clock**: Each segment displayed at its actual time period
 
 - **Advanced Task Management**: 
   - Create tasks with detailed attributes (title, duration, category, priority, time slot)
@@ -102,52 +134,55 @@ Most productivity apps fail because they create a disconnect between planning an
   - 4 priority levels: Low, Medium, High, Urgent
   - Recurring task automation with smart rollover
   - Tag support for flexible organization
-  - Time slot assignment with conflict detection
-
-- **Interactive Task Cards**: 
-  - Start/pause/complete/delete actions
-  - Real-time progress tracking
-  - Duration vs. actual time display
-  - Category and priority badges
-  - Circular timer integration per task
+  - Time slot assignment with visual clock placement
+  - **Real-time progress tracking** with live elapsed time display
+  - **Multi-session work support**: Pause/resume preserves all time segments
+  - **Active task persistence**: Current task survives page refreshes
+  - **Accurate progress bars**: Shows total elapsed time from all work sessions
 
 ### 📈 Analytics - Data-Driven Insights
+
+- **Smart Focus Score Calculation**: 
+  - **Based on actual vs. planned efficiency variance**, not arbitrary ratings
+  - Formula: `100 - (|actual - planned| / planned × 100)`
+  - Perfect execution (60min planned, 60min actual) = 100%
+  - 50% variance (60min planned, 30min or 90min actual) = 50%
+  - Unplanned work (0min planned, any actual) = 50% base
+  - Planned but didn't do (any planned, 0min actual) = 0%
+  - **Handles all edge cases**: No NaN errors, graceful degradation
+  - **Applied everywhere**: Dashboard, Analytics views use same calculation
+
 - **Daily Analytics**: 
   - Total planned vs. actual time comparison
   - Task completion rates and percentages
-  - Focus score calculation
+  - **Calculated focus score** (variance-based)
   - Category breakdown with time distribution
   - Peak productivity hour identification
+  - Real work sessions tracked via timeSegments
 
 - **Weekly Analytics**: 
   - 7-day performance overview
   - Daily trend visualization
+  - **Average focus score** (only days with activity)
   - Best/worst day identification
   - Weekly goal progress tracking
   - Productivity streak calculation
-  - Category time allocation analysis
 
 - **Monthly Analytics**: 
   - 30-day performance metrics
   - Long-term trend identification
+  - **Average focus score** (only weeks with data)
   - Month-over-month comparisons
-  - Cumulative focus scores
-  - Category distribution patterns
+  - Cumulative productivity patterns
 
-- **Performance Visualizations**: 
-  - Category pie charts with time percentages
-  - Progress bar charts for completion rates
-  - Focus score trends over time
-  - Time utilization graphs
+### ⏱️ Real-Time Tracking System - The Intelligence Layer
 
-### ⏱️ Time Tracking System - The Intelligence Layer
-- **Active Time Tracking**: 
-  - Second-by-second duration updates
-  - Automatic start/stop with task lifecycle
-  - Real-time synchronization with task cards
-  - Persistent storage across sessions
-
-- **Pause/Break Management**: 
+- **Time Segments Architecture**: 
+  - Each task stores `timeSegments` array
+  - Segment structure: `{ startTime: ISO, endTime: ISO|null }`
+  - Active segment: `endTime === null`
+  - Completed segment: `endTime` set when paused/stopped
+  - Real-time calculation from all segments 
   - Unlimited pause cycles per task
   - Automatic pause time calculation
   - Break reason tagging
@@ -218,13 +253,16 @@ Most productivity apps fail because they create a disconnect between planning an
   - Responsive design (mobile, tablet, desktop)
   - Keyboard shortcuts support
   - Browser localStorage persistence
+  - Real-time updates every second
 
 - **Chrome Extension**: 
-  - New tab replacement mode
-  - Popup interface option
-  - Chrome Storage API sync
-  - Cross-device data synchronization
-  - Icon badge with task count
+  - **New tab replacement mode**: Opens full app when creating new tabs
+  - **Icon click opens app**: Clicking extension icon opens full app in new tab
+  - **No popup interface**: Streamlined experience without fragmented popup
+  - **Chrome Storage API sync**: Data syncs across devices
+  - **Background service worker**: Handles daily task rollover
+  - **Notification integration**: Desktop notifications for task events
+  - **Automatic daily rollover**: Tasks reset at midnight automatically
 
 ## 🚀 Tech Stack
 
@@ -292,9 +330,10 @@ npm run build:extension
    - Select the `dist` folder from this project
 
 3. **Usage**
-   - Click the extension icon to open in a new tab
+   - Click the extension icon to open the app in a new tab
    - Or open a new tab (the app replaces the default new tab page)
-   - All data syncs automatically using Chrome Storage
+   - All data persists locally using localStorage
+   - Daily rollover happens automatically at midnight
 
 ## 📁 Project Structure
 
@@ -304,21 +343,24 @@ timeManagement/
 │   ├── components/
 │   │   ├── analytics/      # Analytics charts and visualizations
 │   │   ├── dashboard/      # Dashboard widgets (Pomodoro, FocusMeter)
-│   │   ├── layout/         # Header and navigation
+│   │   ├── layout/         # Header, navigation, NotificationPanel
+│   │   ├── schedule/       # DailyClockChart for 24-hour visualization
 │   │   ├── tasks/          # Task components (TaskCard, TaskModal, TaskCircularTimer)
 │   │   └── ui/             # Reusable UI components
 │   ├── router/             # Vue Router configuration
-│   ├── stores/             # Pinia stores (tasks, timeTracking, analytics, pomodoro)
+│   ├── stores/             # Pinia stores (tasks, timeTracking, analytics, pomodoro, notifications)
 │   ├── utils/              # Helper functions (dateHelpers, formatters)
 │   ├── views/              # Page components (Dashboard, Schedule, Analytics, Settings)
 │   ├── App.vue             # Root component
 │   ├── main.js             # Application entry point
 │   └── style.css           # Global styles
 ├── extension/
-│   ├── background.js       # Chrome extension service worker
-│   ├── manifest.json       # Extension configuration
+│   ├── background.js       # Chrome extension service worker with click handler
+│   ├── manifest.json       # Extension configuration (no popup)
 │   └── icons/              # Extension icons
 ├── public/                 # Static assets
+├── scripts/
+│   └── build-extension.js  # Extension build script
 ├── dist/                   # Build output (generated)
 ├── index.html              # HTML entry point
 ├── vite.config.js          # Vite configuration
@@ -454,10 +496,11 @@ timeManagement/
 
 The application uses Pinia for state management with the following stores:
 
-- **tasks**: Task CRUD operations, status management
-- **timeTracking**: Active time tracking, pause/resume, history
+- **tasks**: Task CRUD operations, status management, activeTaskId persistence
+- **timeTracking**: Active time tracking with timeSegments, pause/resume, history
 - **pomodoro**: Pomodoro timer state and configuration
-- **analytics**: Performance metrics and statistics (planned)
+- **analytics**: Performance metrics, variance-based focus score calculation
+- **notifications**: Notification management with localStorage persistence, auto-cleanup
 
 ### Adding New Features
 
@@ -481,9 +524,10 @@ The application uses Pinia for state management with the following stores:
 ### Starting a Task
 1. Navigate to Dashboard or Schedule
 2. Click **Start** on any pending task
-3. Timer begins countdown automatically
-4. Use **Pause** to take breaks
-5. Click **Complete** when finished
+3. Timer begins countdown automatically with real-time updates every second
+4. Use **Pause** to take breaks (all work sessions are preserved)
+5. Click **Resume** to continue (creates new time segment)
+6. Click **Complete** when finished or wait for auto-completion
 
 ### Using Pomodoro Timer
 1. Go to Settings to configure durations

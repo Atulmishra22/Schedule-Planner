@@ -260,8 +260,11 @@ import DailyClockChart from '@/components/schedule/DailyClockChart.vue';
 const tasksStore = useTasksStore();
 const timeStore = useTimeTrackingStore();
 
+// Import date helpers
+import { getTodayLocal } from '../utils/dateHelpers';
+
 // State
-const currentDate = ref(new Date().toISOString().slice(0, 10));
+const currentDate = ref(getTodayLocal());
 const showTaskModal = ref(false);
 const selectedTask = ref(null);
 const currentTime = ref(new Date().toTimeString().slice(0, 5));
@@ -288,7 +291,7 @@ const shortDate = computed(() => {
 });
 
 const isToday = computed(() => {
-  return currentDate.value === new Date().toISOString().slice(0, 10);
+  return currentDate.value === getTodayLocal();
 });
 
 const sortedTasks = computed(() => {
@@ -407,7 +410,7 @@ const nextDay = () => {
 };
 
 const goToToday = () => {
-  currentDate.value = new Date().toISOString().slice(0, 10);
+  currentDate.value = getTodayLocal();
 };
 
 const startTask = (task) => {

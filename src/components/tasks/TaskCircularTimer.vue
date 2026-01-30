@@ -204,14 +204,18 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useTasksStore } from '@/stores/tasks';
 import { useTimeTrackingStore } from '@/stores/timeTracking';
+import { useNotificationsStore } from '@/stores/notifications';
+import { showNotification, playNotificationSound, requestNotificationPermission } from '@/utils/notifications';
 
 const tasksStore = useTasksStore();
 const timeStore = useTimeTrackingStore();
+const notificationsStore = useNotificationsStore();
 
 const emit = defineEmits(['add-task', 'start', 'pause', 'complete', 'delete']);
 
 // State
 const elapsedSeconds = ref(0);
+const hasNotified = ref(false);
 let intervalId = null;
 
 // Computed
@@ -321,31 +325,88 @@ const formatMinutes = (minutes) => {
 };
 
 const updateElapsed = () => {
-  if (!currentTask.value || !timeStore.currentEntry) {
+  if (!currentTask.value) {
     elapsedSeconds.value = 0;
+    hasNotified.value = false;
     return;
   }
   
-  const startTime = new Date(timeStore.currentEntry.startTime);
   const now = new Date();
+  let calculatedSeconds = 0;
   
-  // Calculate total pause time
-  let pauseTime = 0;
-  if (timeStore.currentEntry.pauses) {
-    pauseTime = timeStore.currentEntry.pauses.reduce((sum, pause) => {
-      const pStart = new Date(pause.startTime);
-      const pEnd = pause.endTime ? new Date(pause.endTime) : now;
-      return sum + (pEnd - pStart);
-    }, 0);
+  // Try to use new timeSegments system first
+  if (currentTask.value.timeSegments && currentTask.value.timeSegments.length > 0) {
+    currentTask.value.timeSegments.forEach(segment => {
+      const start = new Date(segment.startTime).getTime();
+      const end = segment.endTime ? new Date(segment.endTime).getTime() : now.getTime();
+      calculatedSeconds += Math.floor((end - start) / 1000);
+    });
+  }
+  // Fall back to old timeStore system
+  else if (timeStore.currentEntry) {
+    const startTime = new Date(timeStore.currentEntry.startTime);
+    
+    // Calculate total pause time
+    let pauseTime = 0;
+    if (timeStore.currentEntry.pauses) {
+      pauseTime = timeStore.currentEntry.pauses.reduce((sum, pause) => {
+        const pStart = new Date(pause.startTime);
+        const pEnd = pause.endTime ? new Date(pause.endTime) : now;
+        return sum + (pEnd - pStart);
+      }, 0);
+    }
+    
+    calculatedSeconds = Math.floor((now - startTime - pauseTime) / 1000);
   }
   
-  // Calculate elapsed time
-  elapsedSeconds.value = Math.floor((now - startTime - pauseTime) / 1000);
+  elapsedSeconds.value = calculatedSeconds;
+  
+  // Check if task duration is complete
+  if (currentTask.value && currentTask.value.duration && isRunning.value) {
+    const totalTaskSeconds = currentTask.value.duration * 60;
+    
+    if (elapsedSeconds.value >= totalTaskSeconds && !hasNotified.value) {
+      hasNotified.value = true;
+      
+      // Play notification sound
+      playNotificationSound();
+      
+      // Show notification (works in both web and extension)
+      showNotification(
+        'Task Completed! 🎉',
+        `"${currentTask.value.title}" - Time's up! Task automatically completed.`,
+        {
+          tag: 'task-complete',
+          requireInteraction: true
+        }
+      );
+      
+      // Add to notification store
+      notificationsStore.addNotification({
+        type: 'task_complete',
+        title: 'Task Completed! 🎉',
+        body: `"${currentTask.value.title}" - Scheduled time completed`
+      });
+      
+      // Auto-complete the task after 1 second
+      setTimeout(() => {
+        completeTask();
+      }, 1000);
+    }
+  }
 };
 
 const startTask = () => {
   if (currentTask.value) {
+    hasNotified.value = false;
     emit('start', currentTask.value);
+    
+    // Add notification for task start
+    notificationsStore.addNotification({
+      type: 'task_started',
+      title: 'Task Started',
+      body: `Working on: "${currentTask.value.title}"`
+    });
   }
 };
 
@@ -371,6 +432,8 @@ const deleteTask = () => {
 
 // Lifecycle
 onMounted(() => {
+  requestNotificationPermission();
+  hasNotified.value = false;
   updateElapsed();
   intervalId = setInterval(updateElapsed, 1000);
 });
