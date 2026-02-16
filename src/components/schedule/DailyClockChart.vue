@@ -59,6 +59,16 @@
           class="tracking-segment"
         />
         
+        <!-- Pomodoro focus sessions (widest, distinctive) -->
+        <path
+          v-for="(segment, index) in pomodoroSegments"
+          :key="`pomodoro-${index}`"
+          :d="segment.path"
+          :fill="segment.color"
+          :opacity="segment.opacity"
+          class="pomodoro-segment"
+        />
+        
         <!-- Current time indicator -->
         <g v-if="showCurrentTime">
           <line
@@ -137,6 +147,17 @@
           <span>Active (Off Time)</span>
         </div>
       </div>
+      <div class="legend-section">
+        <div class="legend-title">Focus Sessions 🍅</div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #f97316"></div>
+          <span>Active Pomodoro ⏱️</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: #ef4444"></div>
+          <span>Completed Pomodoro</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -144,6 +165,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { getTodayLocal } from '../../utils/dateHelpers';
+import { usePomodoroStore } from '../../stores/pomodoro';
 
 const props = defineProps({
   tasks: {
@@ -155,6 +177,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const pomodoroStore = usePomodoroStore();
 
 const size = 400;
 const centerX = size / 2;
@@ -184,7 +208,7 @@ const showCurrentTime = computed(() => {
 const hourLabels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 
 const totalMinutes = computed(() => {
-  return props.tasks
+  const taskMinutes = props.tasks
     .filter(task => task.timeSegments && task.timeSegments.length > 0)
     .reduce((sum, task) => {
       let taskTotal = 0;
@@ -195,6 +219,12 @@ const totalMinutes = computed(() => {
       });
       return sum + Math.floor(taskTotal / 60000);
     }, 0);
+  
+  // Add Pomodoro focus minutes
+  const pomodoroSessions = pomodoroStore.getSessionsForDate(props.date);
+  const pomodoroMinutes = pomodoroSessions.reduce((sum, session) => sum + (session.duration || 0), 0);
+  
+  return taskMinutes + pomodoroMinutes;
 });
 
 // Scheduled task segments (thin, background)
@@ -289,6 +319,66 @@ const trackingSegments = computed(() => {
       });
     });
   });
+  
+  return segments;
+});
+
+// Pomodoro focus sessions (with distinct tomato style)
+const pomodoroSegments = computed(() => {
+  const segments = [];
+  const pomodoroSessions = pomodoroStore.getSessionsForDate(props.date);
+  
+  // Add completed Pomodoro sessions
+  pomodoroSessions.forEach(session => {
+    if (!session.completed || session.type !== 'focus') return;
+    
+    const startTime = new Date(session.startTime);
+    const endTime = new Date(session.endTime);
+    
+    // Convert to hours (0-24)
+    const startHours = startTime.getHours();
+    const startMinutes = startTime.getMinutes();
+    const startHour = startHours + startMinutes / 60;
+    
+    const endHours = endTime.getHours();
+    const endMinutes = endTime.getMinutes();
+    const endHour = endHours + endMinutes / 60;
+    
+    // Skip if duration is too small to render
+    if (endHour - startHour < 0.01) return;
+    
+    // Completed Pomodoro sessions in solid red
+    segments.push({
+      path: createArcPath(startHour, endHour, trackingStrokeWidth + 5),
+      color: '#ef4444', // Tomato red for pomodoro
+      opacity: 0.85
+    });
+  });
+  
+  // Add ACTIVE/RUNNING Pomodoro session in real-time
+  const today = getTodayLocal();
+  if (props.date === today && pomodoroStore.isActive && !pomodoroStore.isBreak) {
+    const now = new Date();
+    const startTime = now.getTime() - ((pomodoroStore.settings.workDuration * 60 - pomodoroStore.timeRemaining) * 1000);
+    const start = new Date(startTime);
+    
+    const startHours = start.getHours();
+    const startMinutes = start.getMinutes();
+    const startHour = startHours + startMinutes / 60;
+    
+    const nowHours = now.getHours();
+    const nowMinutes = now.getMinutes();
+    const nowHour = nowHours + nowMinutes / 60;
+    
+    // Active Pomodoro in bright pulsing red/orange
+    if (nowHour - startHour >= 0.01) {
+      segments.push({
+        path: createArcPath(startHour, nowHour, trackingStrokeWidth + 5),
+        color: pomodoroStore.isPaused ? '#fb923c' : '#f97316', // Orange for active, lighter if paused
+        opacity: pomodoroStore.isPaused ? 0.7 : 0.95
+      });
+    }
+  }
   
   return segments;
 });
@@ -452,6 +542,26 @@ onUnmounted(() => {
 
 .tracking-segment:hover {
   opacity: 1 !important;
+}
+
+.pomodoro-segment {
+  transition: opacity 0.3s;
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.5));
+  animation: pomodoro-pulse 2s ease-in-out infinite;
+}
+
+.pomodoro-segment:hover {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8));
+}
+
+@keyframes pomodoro-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.9));
+  }
 }
 
 .current-time-hand {

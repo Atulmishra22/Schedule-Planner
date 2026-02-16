@@ -131,21 +131,53 @@ const streak = computed(() => 0); // Will calculate from analytics
 
 // Use the new variance-based focus score calculation
 const focusScore = computed(() => {
-  const today = getTodayLocal();
-  const dailyAnalytics = analyticsStore.getDailyAnalytics(today);
-  return dailyAnalytics.focusScore || 0;
+  // Get total actual work minutes from both sources
+  const pomodoroMinutes = pomodoroStore.getTodaysFocusMinutes();
+  const taskTrackingMinutes = timeStore.totalTimeToday;
+  const totalMinutes = pomodoroMinutes + taskTrackingMinutes;
+  
+  // Target: 4 hours of focused work per day (240 minutes)
+  const targetMinutes = 240;
+  return Math.min(100, Math.round((totalMinutes / targetMinutes) * 100));
 });
 
 const focusStats = computed(() => {
-  const today = getTodayLocal();
-  const dailyAnalytics = analyticsStore.getDailyAnalytics(today);
+  // Combine Pomodoro and task tracking time
+  const todayPomodoro = pomodoroStore.getTodaysFocusMinutes();
+  const todayTracking = timeStore.totalTimeToday;
+  
+  const weekPomodoro = pomodoroStore.getWeekFocusMinutes();
+  const weekTracking = getWeekTrackingMinutes();
+  
+  const monthPomodoro = pomodoroStore.getMonthFocusMinutes();
+  const monthTracking = getMonthTrackingMinutes();
   
   return {
-    today: formatMinutes(dailyAnalytics.totalActual),
-    week: '0h',
-    month: '0h'
+    today: formatMinutes(todayPomodoro + todayTracking),
+    week: formatMinutes(weekPomodoro + weekTracking),
+    month: formatMinutes(monthPomodoro + monthTracking)
   };
 });
+
+const getWeekTrackingMinutes = () => {
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekAgoStr = weekAgo.toISOString().slice(0, 10);
+  const todayStr = now.toISOString().slice(0, 10);
+  
+  const entries = timeStore.getEntriesByDateRange(weekAgoStr, todayStr);
+  return entries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+};
+
+const getMonthTrackingMinutes = () => {
+  const now = new Date();
+  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const monthAgoStr = monthAgo.toISOString().slice(0, 10);
+  const todayStr = now.toISOString().slice(0, 10);
+  
+  const entries = timeStore.getEntriesByDateRange(monthAgoStr, todayStr);
+  return entries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+};
 
 const formatMinutes = (minutes) => {
   const hours = Math.floor(minutes / 60);

@@ -14,6 +14,9 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const completedPomodoros = ref(0);
   const currentTaskId = ref(null);
   const intervalId = ref(null);
+  const sessionStartTime = ref(null);
+  const sessionElapsedSeconds = ref(0); // Track actual elapsed time
+  const sessions = ref([]); // Store completed pomodoro sessions
   
   // Settings (loaded from localStorage)
   const settings = ref({
@@ -70,6 +73,8 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     timeRemaining.value = settings.value.workDuration * 60;
     isActive.value = true;
     isPaused.value = false;
+    sessionStartTime.value = new Date().toISOString();
+    sessionElapsedSeconds.value = 0; // Reset elapsed time
     
     startTimer();
     return true;
@@ -130,6 +135,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       
       timeRemaining.value--;
       
+      // Track actual elapsed time (only for focus sessions)
+      if (currentPhase.value === 'focus') {
+        sessionElapsedSeconds.value++;
+      }
+      
       if (timeRemaining.value <= 0) {
         handlePhaseComplete();
       }
@@ -145,6 +155,24 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     if (currentPhase.value === 'focus') {
       // Focus session completed
       completedPomodoros.value++;
+      
+      // Save the completed session with ACTUAL elapsed time
+      if (sessionStartTime.value) {
+        const actualMinutes = Math.round(sessionElapsedSeconds.value / 60); // Real time worked
+        const session = {
+          id: Date.now(),
+          taskId: currentTaskId.value,
+          startTime: sessionStartTime.value,
+          endTime: new Date().toISOString(),
+          duration: actualMinutes, // Use actual time, not preset duration
+          type: 'focus',
+          completed: true
+        };
+        sessions.value.push(session);
+        saveSessions();
+        sessionStartTime.value = null;
+        sessionElapsedSeconds.value = 0;
+      }
       
       // Pause the task
       if (currentTaskId.value && timeTrackingStore.isTracking) {
@@ -197,6 +225,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     isPaused.value = false;
     timeRemaining.value = 0;
     currentTaskId.value = null;
+    sessionElapsedSeconds.value = 0; // Reset actual time
   };
   
   const reset = () => {
@@ -248,8 +277,76 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     settings.value = { ...settings.value, ...newSettings };
   };
   
-  // Load settings on init
+  const saveSessions = () => {
+    localStorage.setItem('pomodoro-sessions', JSON.stringify(sessions.value));
+  };
+  
+  const loadSessions = () => {
+    const saved = localStorage.getItem('pomodoro-sessions');
+    if (saved) {
+      sessions.value = JSON.parse(saved);
+    }
+  };
+  
+  const getSessionsForDate = (dateString) => {
+    return sessions.value.filter(session => {
+      const sessionDate = new Date(session.startTime).toLocaleDateString('en-CA');
+      return sessionDate === dateString;
+    });
+  };
+  
+  const getTodaysFocusMinutes = () => {
+    const today = new Date().toLocaleDateString('en-CA');
+    const todaySessions = getSessionsForDate(today);
+    let total = todaySessions.reduce((sum, session) => sum + (session.duration || 0), 0);
+    
+    // Add currently active Pomodoro time in real-time
+    if (isActive.value && !isBreak.value && currentPhase.value === 'focus') {
+      total += Math.round(sessionElapsedSeconds.value / 60);
+    }
+    
+    return total;
+  };
+  
+  const getWeekFocusMinutes = () => {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    let total = sessions.value
+      .filter(session => new Date(session.startTime) >= weekAgo)
+      .reduce((sum, session) => sum + (session.duration || 0), 0);
+    
+    // Add active session if running
+    if (isActive.value && !isBreak.value && currentPhase.value === 'focus') {
+      total += Math.round(sessionElapsedSeconds.value / 60);
+    }
+    
+    return total;
+  };
+  
+  const getMonthFocusMinutes = () => {
+    const now = new Date();
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    let total = sessions.value
+      .filter(session => new Date(session.startTime) >= monthAgo)
+      .reduce((sum, session) => sum + (session.duration || 0), 0);
+    
+    // Add active session if running
+    if (isActive.value && !isBreak.value && currentPhase.value === 'focus') {
+      total += Math.round(sessionElapsedSeconds.value / 60);
+    }
+    
+    return total;
+  };
+  
+  const calculateFocusScore = () => {
+    const todayMinutes = getTodaysFocusMinutes();
+    const targetMinutes = 4 * settings.value.workDuration; // 4 pomodoros target
+    return Math.min(100, Math.round((todayMinutes / targetMinutes) * 100));
+  };
+  
+  // Load settings and sessions on init
   loadSettings();
+  loadSessions();
   
   return {
     // State
@@ -260,6 +357,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     completedPomodoros,
     currentTaskId,
     settings,
+    sessions,
     
     // Getters
     isBreak,
@@ -277,6 +375,13 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     reset,
     skipPhase,
     loadSettings,
-    updateSettings
+    updateSettings,
+    saveSessions,
+    loadSessions,
+    getSessionsForDate,
+    getTodaysFocusMinutes,
+    getWeekFocusMinutes,
+    getMonthFocusMinutes,
+    calculateFocusScore
   };
 });

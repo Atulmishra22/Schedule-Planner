@@ -58,10 +58,19 @@ export const useTimeTrackingStore = defineStore('timeTracking', () => {
         
         // Update the task's actualDuration in real-time (in seconds for smooth progress)
         const tasksStore = useTasksStore();
+        const task = tasksStore.tasks.find(t => t.id === currentEntry.value.taskId);
+        
         tasksStore.updateTask(currentEntry.value.taskId, { 
           actualDuration: durationMinutes,
           actualDurationSeconds: durationSeconds
         });
+        
+        // Auto-complete if actual duration reaches or exceeds planned duration
+        if (task && task.duration && durationMinutes >= task.duration && task.status !== 'completed') {
+          console.log(`Auto-completing task: ${task.title} (${durationMinutes}/${task.duration} minutes)`);
+          stopTracking();
+          tasksStore.completeTask(task.id);
+        }
       }
     }, 1000);
   };
@@ -110,10 +119,19 @@ export const useTimeTrackingStore = defineStore('timeTracking', () => {
           
           // Update the task's actualDuration in real-time
           const tasksStore = useTasksStore();
+          const task = tasksStore.tasks.find(t => t.id === currentEntry.value.taskId);
+          
           tasksStore.updateTask(currentEntry.value.taskId, { 
             actualDuration: durationMinutes,
             actualDurationSeconds: durationSeconds
           });
+          
+          // Auto-complete if actual duration reaches or exceeds planned duration
+          if (task && task.duration && durationMinutes >= task.duration && task.status !== 'completed') {
+            console.log(`Auto-completing task: ${task.title} (${durationMinutes}/${task.duration} minutes)`);
+            stopTracking();
+            tasksStore.completeTask(task.id);
+          }
         }
       }, 1000);
     }
